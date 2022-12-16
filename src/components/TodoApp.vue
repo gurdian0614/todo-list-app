@@ -3,8 +3,8 @@
     <h2 class="text-center mt-S">Lista Quehaceres App</h2>
 
     <div class="d-flex">
-      <input type="text" placeholder="Ingrese Tarea" class="form-control">
-      <button class="btn btn-warning rounded-0">Ingresar</button>
+      <input v-model="task" type="text" placeholder="Ingrese Tarea" class="form-control">
+      <button @click="submitTask" class="btn btn-warning rounded-0">Ingresar</button>
     </div>
 
     <table class="table table-bordered mt-5">
@@ -44,15 +44,27 @@ export default {
   },
 
   data() {
-  return {
-    tasks: [
-      {
-        name: 'Aprender Vue',
-        status: 'Hecho'
-      }
-    ]
+    return {
+      task: '',
+      tasks: [
+        {
+          name: 'Aprender Vue',
+          status: 'Hecho'
+        }
+      ]
+    }
+  },
+
+  methods: {
+    submitTask() {
+      if(this.task.length === 0) return;
+
+      this.tasks.push({
+        name: this.task,
+        status: 'Por hacer'
+      })
+    }
   }
-}
 }
 </script>
 
