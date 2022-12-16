@@ -19,7 +19,7 @@
       <tbody>
         <tr v-for="(task, index) in tasks" :key="index">
           <td>{{task.name}}</td>
-          <td>{{task.status}}</td>
+          <td><input class="form-check-input" type="checkbox" v-model="task.status" v-bind:id="task.id"></td>
           <td>
             <div class="text-center"  @click="editTask(index)">
               <span class="fa fa-pen"></span>
@@ -49,8 +49,14 @@ export default {
       editedTask: null,
       tasks: [
         {
+          id: 1,
           name: 'Aprender Vue',
-          status: 'Hecho'
+          status: false
+        },
+        {
+          id: 2,
+          name: 'Aprender Node',
+          status: true
         }
       ]
     }
@@ -63,7 +69,7 @@ export default {
       if(this.editedTask === null) {
         this.tasks.push({
           name: this.task,
-          status: 'Por hacer'
+          status: false
         })
       } else {
         this.tasks[this.editedTask].name = this.task;
