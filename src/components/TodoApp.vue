@@ -26,7 +26,7 @@
             </div>
           </td>
           <td>
-            <div class="text-center">
+            <div class="text-center" @click="deleteTask(index)">
               <span class="fa fa-trash"></span>
             </div>
           </td>
@@ -63,6 +63,12 @@ export default {
         name: this.task,
         status: 'Por hacer'
       })
+
+      this.task = ''
+    },
+
+    deleteTask(index) {
+      this.tasks.splice(index, 1)
     }
   }
 }
