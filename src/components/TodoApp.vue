@@ -19,14 +19,14 @@
       <tbody>
         <tr v-for="(task, index) in tasks" :key="index">
           <td>{{task.name}}</td>
-          <td><input class="form-check-input" type="checkbox" v-model="task.status" v-bind:id="task.id"></td>
+          <td><input class="form-check-input" type="checkbox" v-model="task.done" v-bind:id="task.id"></td>
           <td>
-            <div class="text-center"  @click="editTask(index)">
+            <div class="text-center"  @click="editTask(task.id, index)">
               <span class="fa fa-pen"></span>
             </div>
           </td>
           <td>
-            <div class="text-center" @click="deleteTask(index)">
+            <div class="text-center" @click="deleteTask(task.id)">
               <span class="fa fa-trash"></span>
             </div>
           </td>
@@ -37,6 +37,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+axios.defaults.baseURL = "tasks";
 export default {
   name: 'HelloWorld',
   props: {
@@ -45,45 +47,70 @@ export default {
 
   data() {
     return {
+      id: null,
       task: '',
-      editedTask: null,
-      tasks: [
-        {
-          id: 1,
-          name: 'Aprender Vue',
-          status: false
-        },
-        {
-          id: 2,
-          name: 'Aprender Node',
-          status: true
-        }
-      ]
+      editedTask: null, 
+      tasks: []
     }
+  },
+
+  created() {
+    fetch('https://todo-list-api-gurdian.up.railway.app/tasks')
+      .then(response => response.json())
+      .then(data => this.tasks = data);
   },
 
   methods: {
     submitTask() {
-      if(this.task.length === 0) return;
+      if(this.task.length === 0) {
+        alert("Debe ingresar una tarea")
+      }
 
       if(this.editedTask === null) {
-        this.tasks.push({
-          name: this.task,
-          status: false
-        })
+        const requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            name: this.task,
+            done: false
+          })
+        };
+
+        fetch('https://todo-list-api-gurdian.up.railway.app/tasks', requestOptions)
+          .then(response => response.json())
+          .then(data => alert(data.message));
       } else {
-        this.tasks[this.editedTask].name = this.task;
+        const requestUpdateOptions = {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            name: this.task
+          })
+        };
+
+        fetch('https://todo-list-api-gurdian.up.railway.app/tasks/' + this.id, requestUpdateOptions)
+          .then(response => response.json())
+          .then(data => alert(data.message));
         this.editedTask = null;
+        this.id = null;
       }
 
       this.task = ''
     },
 
-    deleteTask(index) {
-      this.tasks.splice(index, 1)
+    deleteTask(id) {
+      const requestOptions = {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+      };
+
+      fetch('https://todo-list-api-gurdian.up.railway.app/tasks/' + id, requestOptions)
+        .then(response => response.json())
+        .then(data => console.log(data));
     },
 
-    editTask(index) {
+    editTask(id, index) {
+      this.id = id;
       this.task = this.tasks[index].name;
       this.editedTask = index;
     }
