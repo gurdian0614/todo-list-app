@@ -61,7 +61,7 @@ export default {
   methods: {
     submitTask() {
       if(this.task.length === 0) {
-        this.$alertify.warning("Debe ingresar una tarea")
+        this.$alertify.error("Debe ingresar una tarea")
       } else {
         if(this.editedTask === null) {
           const requestOptions = {
@@ -108,17 +108,24 @@ export default {
     },
 
     deleteTask(id, index) {
-      const requestOptions = {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' }
-      };
+      this.$alertify.confirmWithTitle(
+        'Eliminar Tarea',
+        'Desea eliminar la tarea?',
+        () => {
+          const requestOptions = {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' }
+          };
 
-      fetch('https://todo-list-api-gurdian.up.railway.app/tasks/' + id, requestOptions)
-        .then(response => response.json())
-        .then(data => {
-          this.$alertify.success(data.message);
-          this.tasks.splice(index, 1);
-      });
+          fetch('https://todo-list-api-gurdian.up.railway.app/tasks/' + id, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+              this.$alertify.success(data.message);
+              this.tasks.splice(index, 1);
+          });
+        },
+        () => console.log('Cancelar...')
+      );
     },
 
     editTask(id, index) {
