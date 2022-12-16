@@ -21,7 +21,7 @@
           <td>{{task.name}}</td>
           <td>{{task.status}}</td>
           <td>
-            <div class="text-center">
+            <div class="text-center"  @click="editTask(index)">
               <span class="fa fa-pen"></span>
             </div>
           </td>
@@ -46,6 +46,7 @@ export default {
   data() {
     return {
       task: '',
+      editedTask: null,
       tasks: [
         {
           name: 'Aprender Vue',
@@ -59,17 +60,28 @@ export default {
     submitTask() {
       if(this.task.length === 0) return;
 
-      this.tasks.push({
-        name: this.task,
-        status: 'Por hacer'
-      })
+      if(this.editedTask === null) {
+        this.tasks.push({
+          name: this.task,
+          status: 'Por hacer'
+        })
+      } else {
+        this.tasks[this.editedTask].name = this.task;
+        this.editedTask = null;
+      }
 
       this.task = ''
     },
 
     deleteTask(index) {
       this.tasks.splice(index, 1)
+    },
+
+    editTask(index) {
+      this.task = this.tasks[index].name;
+      this.editedTask = index;
     }
+
   }
 }
 </script>
