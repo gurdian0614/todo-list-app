@@ -4,7 +4,7 @@
 
     <div class="d-flex">
       <input v-model="task" type="text" placeholder="Ingrese Tarea" class="form-control">
-      <button @click="submitTask" class="btn btn-warning rounded-0">Ingresar</button>
+      <button @click="submitTask" class="btn btn-primary rounded-0">Ingresar</button>
     </div>
 
     <table class="table table-bordered mt-5">
@@ -19,15 +19,15 @@
       <tbody>
         <tr v-for="(task, index) in tasks" :key="index">
           <td>{{task.name}}</td>
-          <td><input class="form-check-input" type="checkbox" v-model="task.done" v-bind:id="task.id"></td>
+          <td><input class="form-check-input" @change="onChange(task.id, task.name, $event)" type="checkbox" v-model="task.done" v-bind:id="task.id"></td>
           <td>
             <div class="text-center"  @click="editTask(task.id, index)">
-              <span class="fa fa-pen"></span>
+              <span class="fa fa-pen pen-color"></span>
             </div>
           </td>
           <td>
-            <div class="text-center" @click="deleteTask(task.id)">
-              <span class="fa fa-trash"></span>
+            <div class="text-center" @click="deleteTask(task.id, index)">
+              <span class="fa fa-trash trash-color"></span>
             </div>
           </td>
         </tr>
@@ -37,8 +37,6 @@
 </template>
 
 <script>
-import axios from 'axios'
-axios.defaults.baseURL = "tasks";
 export default {
   name: 'HelloWorld',
   props: {
@@ -63,42 +61,53 @@ export default {
   methods: {
     submitTask() {
       if(this.task.length === 0) {
-        alert("Debe ingresar una tarea")
-      }
-
-      if(this.editedTask === null) {
-        const requestOptions = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            name: this.task,
-            done: false
-          })
-        };
-
-        fetch('https://todo-list-api-gurdian.up.railway.app/tasks', requestOptions)
-          .then(response => response.json())
-          .then(data => alert(data.message));
+        this.$alertify.warning("Debe ingresar una tarea")
       } else {
-        const requestUpdateOptions = {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            name: this.task
-          })
-        };
+        if(this.editedTask === null) {
+          const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              name: this.task,
+              done: false
+            })
+          };
 
-        fetch('https://todo-list-api-gurdian.up.railway.app/tasks/' + this.id, requestUpdateOptions)
-          .then(response => response.json())
-          .then(data => alert(data.message));
-        this.editedTask = null;
-        this.id = null;
+          fetch('https://todo-list-api-gurdian.up.railway.app/tasks', requestOptions)
+            .then(response => response.json())
+            .then(data => {
+              this.$alertify.success(data.message);
+          });
+
+          this.tasks.push({
+            name: this.task,
+            status: false
+          });
+        } else {
+          const requestUpdateOptions = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              name: this.task
+            })
+          };
+
+          fetch('https://todo-list-api-gurdian.up.railway.app/tasks/' + this.id, requestUpdateOptions)
+            .then(response => response.json())
+            .then(data => {
+              this.$alertify.success(data.message);
+          });
+
+          this.tasks[this.editedTask].name = this.task;
+          this.editedTask = null;
+          this.id = null;
+        }
+
+        this.task = '';
       }
-
-      this.task = ''
     },
 
-    deleteTask(id) {
+    deleteTask(id, index) {
       const requestOptions = {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' }
@@ -106,13 +115,35 @@ export default {
 
       fetch('https://todo-list-api-gurdian.up.railway.app/tasks/' + id, requestOptions)
         .then(response => response.json())
-        .then(data => console.log(data));
+        .then(data => {
+          this.$alertify.success(data.message);
+          this.tasks.splice(index, 1);
+      });
     },
 
     editTask(id, index) {
       this.id = id;
       this.task = this.tasks[index].name;
       this.editedTask = index;
+    },
+
+    onChange(id, name, $event) {
+      const checked = $event.target.checked;
+      
+      const requestUpdateOptions = {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          done: checked
+        })
+      };
+
+      fetch('https://todo-list-api-gurdian.up.railway.app/tasks/' + id, requestUpdateOptions)
+        .then(response => response.json())
+        .then(data => {
+          this.$alertify.success(data.message);
+      });
     }
 
   }
@@ -120,5 +151,11 @@ export default {
 </script>
 
 <style scoped>
+.pen-color {
+  color: green
+}
 
+.trash-color {
+  color: red
+}
 </style>
